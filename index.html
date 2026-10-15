@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>วงล้อสุ่มชื่อ • ธีมไทยหวานละมุน</title>
+<style>
+  :root{
+    --pink:#f7b8cc; --pink-dark:#d96c98; --cream:#fff9ef; --lav:#d9ccf5;
+    --mint:#c9eadc; --gold:#f2cf7a; --ink:#69485e;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; color:var(--ink);
+    font-family:"Tahoma","Leelawadee UI",sans-serif;
+    background:
+      radial-gradient(circle at 8% 12%, #fff 0 3px, transparent 4px),
+      radial-gradient(circle at 92% 20%, #fff 0 4px, transparent 5px),
+      linear-gradient(135deg,#fff4f7 0%,#fff8e9 48%,#f2edff 100%);
+    background-size:45px 45px,65px 65px,auto;
+  }
+  header{text-align:center;padding:26px 16px 10px}
+  .eyebrow{font-size:.95rem;letter-spacing:.08em;color:#b36d8b}
+  h1{margin:8px 0 6px;font-size:clamp(1.7rem,4vw,2.6rem);color:#a94f79}
+  .subtitle{margin:0;color:#876a7b}
+  .ornaments{font-size:1.65rem;letter-spacing:.35rem;margin:10px 0}
+  main{width:min(1120px,94vw);margin:10px auto 32px;display:grid;grid-template-columns:minmax(280px,1.25fr) minmax(260px,.75fr);gap:22px;align-items:start}
+  .panel{background:#ffffffd9;border:2px solid #fff;box-shadow:0 12px 35px #b7779820;border-radius:26px;padding:20px}
+  .wheel-panel{text-align:center}
+  .wheel-wrap{position:relative;width:min(100%,540px);margin:0 auto}
+  canvas{display:block;width:100%;height:auto;filter:drop-shadow(0 9px 12px #8b597022)}
+  /* ลูกศรชี้ลงจากด้านบนเข้าสู่วงล้อ */
+  .pointer{position:absolute;z-index:3;top:-3px;left:50%;transform:translateX(-50%);width:0;height:0;
+    border-left:19px solid transparent;border-right:19px solid transparent;border-top:39px solid #b95783;
+    filter:drop-shadow(0 3px 2px #6e345522)}
+  .pointer:after{content:"";position:absolute;left:-8px;top:-38px;width:16px;height:16px;border-radius:50%;background:#ffe7a5;border:3px solid #b95783}
+  .spin-btn{border:0;border-radius:999px;padding:14px 35px;margin:18px 0 4px;background:linear-gradient(135deg,#e77fa7,#bd76c9);color:white;font-size:1.12rem;font-weight:bold;box-shadow:0 6px 0 #a85c91;cursor:pointer;transition:transform .15s}
+  .spin-btn:hover{transform:translateY(-2px)} .spin-btn:active{transform:translateY(3px);box-shadow:0 3px 0 #a85c91}
+  .spin-btn:disabled{opacity:.65;cursor:wait}
+  .result{min-height:58px;margin:12px auto 0;padding:12px;border-radius:16px;background:#fff4c9;border:1px dashed #e4bd62;font-size:1.18rem;font-weight:bold;color:#8c5a31}
+  .result small{display:block;font-size:.78rem;font-weight:normal;color:#987e68;margin-bottom:3px}
+  h2{font-size:1.2rem;margin:0 0 12px;color:#a94f79}
+  .hint{font-size:.88rem;line-height:1.55;color:#8b7180;margin:0 0 12px}
+  textarea{width:100%;min-height:220px;resize:vertical;border:1.5px solid #ead0df;border-radius:16px;padding:13px;font:1rem/1.8 Tahoma,sans-serif;color:#69485e;background:#fffcff;outline:none}
+  textarea:focus{border-color:#d984ad;box-shadow:0 0 0 3px #f7dce8}
+  .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+  .secondary{border:1px solid #e7bfd2;background:#fff5fa;color:#9b5275;border-radius:12px;padding:10px 13px;font-weight:bold;cursor:pointer}
+  .secondary:hover{background:#ffe8f2}
+  .count{margin-top:12px;font-size:.85rem;color:#927587}
+  .footer{text-align:center;padding:0 16px 24px;color:#9d8090;font-size:.85rem}
+  .confetti{font-size:1.1rem}
+  @media(max-width:760px){main{grid-template-columns:1fr}.panel{padding:15px}header{padding-top:20px}.wheel-wrap{width:min(100%,480px)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">✿ ห้องเรียนแสนสดใส ✿</div>
+  <h1>วงล้อสุ่มชื่อ</h1>
+  <p class="subtitle">หมุนวงล้อ ลุ้นชื่อคนถัดไปกันเลย!</p>
+  <div class="ornaments" aria-hidden="true">🌸 🪷 🐘 🌺</div>
+</header>
+<main>
+  <section class="panel wheel-panel">
+    <div class="wheel-wrap">
+      <div class="pointer" aria-hidden="true"></div>
+      <canvas id="wheel" width="700" height="700" aria-label="วงล้อสุ่มชื่อ"></canvas>
+    </div>
+    <button class="spin-btn" id="spin">🌟 หมุนวงล้อเลย! 🌟</button>
+    <div class="result" id="result" aria-live="polite"><small>ผู้โชคดีคือ...</small>พร้อมหรือยังเอ่ย? 💗</div>
+  </section>
+  <aside class="panel">
+    <h2>📝 รายชื่อในวงล้อ</h2>
+    <p class="hint">แก้ไขรายชื่อได้ตามต้องการ โดยใส่ชื่อ 1 ชื่อต่อ 1 บรรทัด (ตัดคำนำหน้าและนามสกุลออกให้แล้ว)</p>
+    <textarea id="names" spellcheck="false" aria-label="แก้ไขรายชื่อ">ธัญวลัย
+นราธิป
+พชรภัทร
+พัฒนชัย
+วัชรพงษ์
+สิงห์ชัย
+อมลาลักษณ์</textarea>
+    <div class="actions">
+      <button class="secondary" id="update">🔄 อัปเดตวงล้อ</button>
+      <button class="secondary" id="reset">↩ คืนค่ารายชื่อเดิม</button>
+      <button class="secondary" id="remove">➖ นำชื่อผู้ชนะออก</button>
+    </div>
+    <div class="count" id="count">มี 7 รายชื่อในวงล้อ</div>
+    <p class="hint" style="margin-top:16px">💡 เคล็ดลับ: ใช้ปุ่ม “นำชื่อผู้ชนะออก” เพื่อไม่ให้ชื่อเดิมถูกสุ่มซ้ำในรอบถัดไป</p>
+  </aside>
+</main>
+<div class="footer"><span class="confetti">🌼 ✨ 🪷</span> สุ่มสนุก เรียนรู้อย่างมีความสุข <span class="confetti">🪷 ✨ 🌼</span></div>
+<script>
+(() => {
+  const original = ["ธัญวลัย","นราธิป","พชรภัทร","พัฒนชัย","วัชรพงษ์","สิงห์ชัย","อมลาลักษณ์"];
+  const colors = ["#f6bfd0","#c9baf0","#bfe6d8","#ffe0a3","#f4c8b5","#c5ddf5","#e9c9e8","#d7e7a9","#f7d5e4"];
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+  const namesInput = document.getElementById("names");
+  const spinBtn = document.getElementById("spin");
+  const result = document.getElementById("result");
+  const count = document.getElementById("count");
+  let names = original.slice(), rotation = 0, spinning = false, winner = "";
+  const cx = canvas.width/2, cy = canvas.height/2, radius = 320;
+
+  function readNames(){
+    return namesInput.value.split(/\n/).map(s => s.trim()).filter(Boolean);
+  }
+  function draw(){
+    ctx.clearRect(0,0,700,700);
+    if(!names.length){
+      ctx.fillStyle="#fff5fa";ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#a94f79";ctx.font="bold 27px Tahoma";ctx.textAlign="center";ctx.fillText("เพิ่มรายชื่อก่อนนะ 💗",cx,cy);
+      count.textContent="ยังไม่มีรายชื่อในวงล้อ";return;
+    }
+    const arc = Math.PI*2/names.length;
+    names.forEach((name,i)=>{
+      const start = rotation + i*arc - Math.PI/2;
+      const end = start + arc;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,radius,start,end);ctx.closePath();
+      ctx.fillStyle=colors[i%colors.length];ctx.fill();
+      ctx.strokeStyle="#fffaf6";ctx.lineWidth=5;ctx.stroke();
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(start+arc/2);
+      ctx.textAlign="right";ctx.textBaseline="middle";
+      let fontSize = names.length > 10 ? 20 : names.length > 7 ? 23 : 27;
+      ctx.font=`bold ${fontSize}px Tahoma, sans-serif`;
+      ctx.fillStyle="#68445c";
+      let label=name;
+      while(ctx.measureText(label).width > radius-85 && fontSize>15){fontSize--;ctx.font=`bold ${fontSize}px Tahoma, sans-serif`;}
+      ctx.fillText(label,radius-28,0);
+      ctx.restore();
+    });
+    ctx.beginPath();ctx.arc(cx,cy,49,0,Math.PI*2);ctx.fillStyle="#fff8ec";ctx.fill();ctx.lineWidth=7;ctx.strokeStyle="#e6b9ce";ctx.stroke();
+    ctx.font="30px Tahoma";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("🪷",cx,cy+1);
+    ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.strokeStyle="#fff";ctx.lineWidth=10;ctx.stroke();
+    count.textContent=`มี ${names.length} รายชื่อในวงล้อ`;
+  }
+  function updateNames(){
+    if(spinning)return;
+    names=readNames();winner="";result.innerHTML="<small>ผู้โชคดีคือ...</small>รายชื่ออัปเดตแล้ว 🌸";draw();
+  }
+  function spin(){
+    if(spinning)return;
+    if(!names.length){result.innerHTML="<small>อุ๊ย!</small>กรุณาเพิ่มรายชื่อก่อนนะ 💗";return;}
+    spinning=true;spinBtn.disabled=true;winner="";
+    const chosen=Math.floor(Math.random()*names.length);
+    const arc=Math.PI*2/names.length;
+    // ลูกศรอยู่ตำแหน่ง 12 นาฬิกา: จัดกลางช่องที่เลือกให้หยุดตรงด้านบน
+    const targetMod = ((-Math.PI/2) - (chosen*arc + arc/2));
+    const currentMod = ((rotation % (Math.PI*2)) + Math.PI*2)%(Math.PI*2);
+    let delta = ((targetMod-currentMod)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+    const extraTurns = 6 + Math.floor(Math.random()*3);
+    const start=rotation, end=rotation+extraTurns*Math.PI*2+delta, duration=4800, startTime=performance.now();
+    function animate(now){
+      const t=Math.min(1,(now-startTime)/duration);
+      const eased=1-Math.pow(1-t,4);
+      rotation=start+(end-start)*eased;draw();
+      if(t<1){requestAnimationFrame(animate);}
+      else{
+        rotation=((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+        winner=names[chosen];spinning=false;spinBtn.disabled=false;
+        result.innerHTML=`<small>🎉 ผู้โชคดีคือ 🎉</small>${escapeHtml(winner)} 💖`;
+        draw();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+  document.getElementById("update").addEventListener("click",updateNames);
+  document.getElementById("reset").addEventListener("click",()=>{if(spinning)return;namesInput.value=original.join("\n");updateNames();});
+  document.getElementById("remove").addEventListener("click",()=>{
+    if(spinning)return;
+    if(!winner){result.innerHTML="<small>ยังไม่มีผู้ชนะ</small>หมุนวงล้อก่อนนะ 🌷";return;}
+    names=names.filter(n=>n!==winner);namesInput.value=names.join("\n");winner="";
+    result.innerHTML="<small>เรียบร้อยแล้ว</small>นำชื่อผู้ชนะออกจากวงล้อแล้ว 🌼";draw();
+  });
+  spinBtn.addEventListener("click",spin);
+  namesInput.addEventListener("change",updateNames);
+  draw();
+})();
+</script>
+</body>
+</html>
+'''
